@@ -53,25 +53,31 @@ if prompt := st.chat_input("اطرح سؤالك النفسي هنا..."):
     # إرسال المحادثة لـ Gemini وتوليد الرد
     with st.chat_message("assistant"):
         with st.spinner("جاري البحث في المصادر العلمية وتجهيز الإجابة..."):
-            try:
-           conversation = "\n".join(
-    f'{"المستخدم" if msg["role"] == "user" else "المساعد"}: {msg["content"]}'
-    for msg in st.session_state.messages[:-1]
-)
-
-response = client.models.generate_content(
-    model="gemini-3.5-flash",
-    contents=f"""{SYSTEM_INSTRUCTION}
-
-سجل المحادثة:
-{conversation}
-
-سؤال المستخدم الحالي:
-{prompt}
-"""
-)
-
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            try: 
+                conversation = "\n".join(
+                    f'{"المستخدم" if msg["role"] == "user" else "المساعد"}: {msg["content"]}'
+                    for msg in st.session_state.messages[:-1]
+                )
+                
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=f"""
+                    {SYSTEM_INSTRUCTION}
+                    سجل المحادثة:
+                    {conversation}
+                    
+                    سؤال المستخدم الحالي:
+                    {prompt}
+                    """
+                    )
+                    
+                    st.markdown(response.text)
+                    
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": response.text
+                        }
+                    )
             except Exception as e:
                 st.error(f"حدث خطأ أثناء الاتصال: {e}")
