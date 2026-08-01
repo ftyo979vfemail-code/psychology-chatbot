@@ -48,20 +48,26 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("اطرح سؤالك النفسي هنا..."):
     # عرض سؤال المستخدم
     st.chat_message("user").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # إرسال المحادثة لـ Gemini وتوليد الرد
-   with st.chat_message("assistant"):
-    with st.spinner("جاري البحث في المصادر العلمية وتجهيز الإجابة..."):
-        try:
-            conversation = "\n".join(
-                f'{"المستخدم" if msg["role"] == "user" else "المساعد"}: {msg["content"]}'
-                for msg in st.session_state.messages[:-1]
-            )
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": prompt
+        }
+    )
 
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=f"""
+    # إرسال المحادثة إلى Gemini وتوليد الرد
+    with st.chat_message("assistant"):
+        with st.spinner("جاري البحث في المصادر العلمية وتجهيز الإجابة..."):
+            try:
+                conversation = "\n".join(
+                    f'{"المستخدم" if msg["role"] == "user" else "المساعد"}: {msg["content"]}'
+                    for msg in st.session_state.messages[:-1]
+                )
+
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=f"""
 {SYSTEM_INSTRUCTION}
 
 سجل المحادثة:
@@ -70,14 +76,16 @@ if prompt := st.chat_input("اطرح سؤالك النفسي هنا..."):
 سؤال المستخدم الحالي:
 {prompt}
 """
-            )
-                    st.markdown(response.text)
-                    
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": response.text
-                        }
-                    )
+                )
+
+                st.markdown(response.text)
+
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": response.text
+                    }
+                )
+
             except Exception as e:
                 st.error(f"حدث خطأ أثناء الاتصال: {e}")
